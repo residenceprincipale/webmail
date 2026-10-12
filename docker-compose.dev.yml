@@ -1,0 +1,22 @@
+# Dev: hot reload on file change.
+# Usage: docker compose -f docker-compose.yml -f docker-compose.dev.yml up --build
+services:
+  webmail:
+    image: oven/bun:1-alpine
+    build: !reset null
+    working_dir: /app
+    command: ["sh", "-c", "bun install && bun run dev"]
+    environment:
+      NODE_ENV: development
+      PORT: 3000
+      HOST: 0.0.0.0
+      NUXT_HOST: 0.0.0.0
+      NUXT_PORT: 3000
+    volumes:
+      - .:/app
+      - /app/node_modules
+      - /app/.nuxt
+      - /app/.output
+      - scheduled:/app/.scheduled
+      - sessions:/app/.sessions
+      - profiles:/app/.profiles

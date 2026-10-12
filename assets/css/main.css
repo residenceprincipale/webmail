@@ -1,0 +1,174 @@
+@import "tailwindcss";
+
+:root {
+  --background: #ffffff;
+  --foreground: #000000;
+}
+
+/* Global reset */
+* {
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+
+/* Font and colors */
+html, body {
+  font-family: Georgia, serif;
+  background: var(--background);
+  color: var(--foreground);
+}
+
+/* Dark mode: background applied pre-hydration, light utilities remapped below. */
+html.dark {
+  color-scheme: dark;
+  --background: #000000;
+  --foreground: #ffffff;
+}
+html.dark, html.dark body {
+  background: #000000;
+  color: #ffffff;
+}
+
+/* Light mode: stepped gray scale. */
+.border-neutral-200 { border-color: #e5e5e5; }
+.hover\:bg-neutral-200:hover { background-color: #e5e5e5; }
+.active\:bg-neutral-200:active { background-color: #d4d4d4; }
+
+/* Dark remaps: stepped gray scale. */
+html.dark .bg-white { background-color: #000000; }
+html.dark .bg-neutral-100 { background-color: #111111; }
+html.dark .bg-neutral-200 { background-color: #1c1c1c; }
+html.dark .border-neutral-200 { border-color: #2e2e2e; }
+html.dark .border-neutral-300 { border-color: #404040; }
+html.dark .divide-neutral-200 > :not([hidden]) ~ :not([hidden]) { border-color: #2e2e2e; }
+html.dark .divide-neutral-300 > :not([hidden]) ~ :not([hidden]) { border-color: #404040; }
+
+/* Text: white / two secondary grays */
+html.dark .text-neutral-900 { color: #ffffff; }
+html.dark .text-neutral-700 { color: #a3a3a3; }
+html.dark .text-neutral-300 { color: #d4d4d4; }
+html.dark .text-black { color: #ffffff; }
+html.dark .border-black { border-color: #ffffff; }
+html.dark .bg-black { background-color: #ffffff; color: #000000; }
+html.dark .bg-black.text-white { color: #000000; }
+html.dark .hover\:bg-neutral-800:hover, html.dark .hover\:bg-neutral-700:hover { background-color: #262626; }
+html.dark input::placeholder { color: #a3a3a3; }
+
+/* Hovers */
+html.dark .hover\:bg-neutral-100:hover, html.dark .hover\:bg-neutral-200:hover { background-color: #262626; }
+
+/* Pure black/white: consistent inversion */
+html.dark .invert-dark { filter: invert(1); }
+/* Avatars: black becomes white in dark mode. */
+html.dark .avatar[data-shade="0"] { background: #ffffff !important; color: #000000 !important; }
+html.dark .star-filled { fill: #ffffff; stroke: #ffffff; }
+
+/* Quill */
+html.dark .ql-toolbar.ql-snow { border-color: #404040; }
+html.dark .ql-container.ql-snow { border-color: #404040; }
+html.dark .ql-toolbar.ql-snow .ql-stroke { stroke: #d4d4d4; }
+html.dark .ql-toolbar.ql-snow .ql-fill { fill: #d4d4d4; }
+html.dark .ql-toolbar.ql-snow .ql-picker-label { color: #d4d4d4; }
+html.dark .ql-toolbar.ql-snow button:hover,
+html.dark .ql-toolbar.ql-snow button.ql-active { background: #ffffff; }
+html.dark .ql-editor.ql-blank::before { color: #a3a3a3; }
+
+/* Square checkbox. */
+.wm-check {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  border: 1.5px solid #000000;
+  background: #ffffff;
+  display: inline-grid;
+  place-content: center;
+  margin: 0;
+}
+.wm-check:hover { background: #e5e5e5; }
+.wm-check:checked { background: #000000; }
+.wm-check:checked::before {
+  content: "";
+  width: 9px;
+  height: 5px;
+  border-left: 2px solid #ffffff;
+  border-bottom: 2px solid #ffffff;
+  transform: rotate(-45deg) translate(0.5px, -0.5px);
+}
+.wm-check:indeterminate { background: #000000; }
+.wm-check:indeterminate::before {
+  content: "";
+  width: 8px;
+  height: 0;
+  border-bottom: 2px solid #ffffff;
+}
+.wm-check:focus-visible { outline: 2px solid #000000; outline-offset: 1px; }
+html.dark .wm-check { border-color: #ffffff; background: #000000; }
+html.dark .wm-check:hover { background: #262626; }
+html.dark .wm-check:checked { background: #ffffff; }
+html.dark .wm-check:checked::before { border-color: #000000; }
+html.dark .wm-check:indeterminate { background: #ffffff; }
+html.dark .wm-check:indeterminate::before { border-color: #000000; }
+html.dark .wm-check:focus-visible { outline-color: #ffffff; }
+
+/* Gmail-style quotes. */
+.thread-html blockquote {
+  margin: 8px 0 8px 4px;
+  padding-left: 12px;
+  border-left: 2px solid #000000;
+}
+html.dark .thread-html blockquote { border-left-color: #ffffff; }
+.thread-html .quoted-toggle {
+  display: inline-block;
+  cursor: pointer;
+  padding: 0 8px;
+  font-size: 13px;
+  color: #ffffff;
+  background: #000000;
+  border: none;
+}
+html.dark .thread-html .quoted-toggle { color: #000000; background: #ffffff; }
+
+/* Quill visual tweaks. */
+.ql-toolbar.ql-snow .ql-stroke {
+  stroke: #000000;
+}
+.ql-toolbar.ql-snow .ql-fill {
+  fill: #000000;
+}
+.ql-toolbar.ql-snow button:hover .ql-stroke,
+.ql-toolbar.ql-snow button.ql-active .ql-stroke {
+  stroke: #000000;
+}
+.ql-toolbar.ql-snow button:hover .ql-fill,
+.ql-toolbar.ql-snow button.ql-active .ql-fill {
+  fill: #000000;
+}
+.ql-toolbar.ql-snow button:hover,
+.ql-toolbar.ql-snow button.ql-active {
+  background: #e5e5e5;
+}
+.ql-toolbar.ql-snow .ql-picker-label {
+  color: #000000;
+}
+.ql-container.ql-snow {
+  font-family: Georgia, serif;
+  font-size: 14px;
+}
+.ql-editor.ql-blank::before {
+  color: #6b7280;
+  font-style: normal;
+  left: 16px;
+}
+/* Quill links back in palette. */
+.ql-snow .ql-editor a { color: #000000; }
+html.dark .ql-snow .ql-editor a { color: #ffffff; }
+/* Quill tooltip positioning notes. */
+.ql-container .ql-editor {
+  max-height: 220px;
+  overflow-y: auto;
+}
+.ql-container .ql-tooltip {
+  z-index: 70;
+}

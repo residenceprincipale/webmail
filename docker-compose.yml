@@ -1,0 +1,66 @@
+services:
+  webmail:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: webmail
+    restart: unless-stopped
+    ports:
+      - "3005:3000"
+    environment:
+      NODE_ENV: production
+      # generate with: openssl rand -base64 32
+      WEBMAIL_SESSION_SECRET: ${WEBMAIL_SESSION_SECRET:?see .env.example}
+      # keep false while the app is served over http://localhost:3005
+      WEBMAIL_SECURE_COOKIES: ${WEBMAIL_SECURE_COOKIES:-false}
+      # shared secret between the cron and the app, guards /api/cron/*
+      WEBMAIL_CRON_SECRET: ${WEBMAIL_CRON_SECRET:?see .env.example}
+      # default IMAP/SMTP hosts (OVH defaults, override per provider)
+      WEBMAIL_IMAP_HOST: ${WEBMAIL_IMAP_HOST:-ssl0.ovh.net}
+      WEBMAIL_SMTP_HOST: ${WEBMAIL_SMTP_HOST:-}
+      WEBMAIL_SMTP_PORT: ${WEBMAIL_SMTP_PORT:-465}
+      WEBMAIL_ALLOWED_IMAP_HOSTS: ${WEBMAIL_ALLOWED_IMAP_HOSTS:-}
+      # password change via the provider API (PUT /api/password, OVH by default)
+      WEBMAIL_PASSWORD_PROVIDER: ${WEBMAIL_PASSWORD_PROVIDER:-ovh}
+      OVH_APP_KEY: ${OVH_APP_KEY:-}
+      OVH_APP_SECRET: ${OVH_APP_SECRET:-}
+      OVH_CONSUMER_KEY: ${OVH_CONSUMER_KEY:-}
+      OVH_API_ENDPOINT: ${OVH_API_ENDPOINT:-ovh-eu}
+    volumes:
+      - scheduled:/app/.scheduled
+      - sessions:/app/.sessions
+      - profiles:/app/.profiles
+
+  init-scheduled:
+    image: alpine:3.20
+    volumes:
+      - scheduled:/app/.scheduled
+      - sessions:/app/.sessions
+      - profiles:/app/.profiles
+    entrypoint: ["/bin/sh", "-c"]
+    command: ["mkdir -p /app/.scheduled /app/.sessions /app/.profiles && chown -R 1001:1001 /app/.scheduled /app/.sessions /app/.profiles"]
+
+  scheduler:
+    image: alpine:3.20
+    restart: unless-stopped
+    depends_on:
+      webmail:
+        condition: service_started
+      init-scheduled:
+        condition: service_completed_successfully
+    environment:
+      WEBMAIL_CRON_SECRET: ${WEBMAIL_CRON_SECRET:?see .env.example}
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        apk add --no-cache curl >/dev/null 2>&1
+        while true; do
+          curl -sf -H "Authorization: Bearer $${WEBMAIL_CRON_SECRET}" \
+            "http://webmail:3000/api/cron/scheduled" || true
+          sleep 60
+        done
+
+volumes:
+  scheduled:
+  sessions:
+  profiles:
