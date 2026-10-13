@@ -1,5 +1,15 @@
 <template>
-  <div class="fixed bottom-0 right-6 z-30 flex max-h-[85vh] w-[600px] flex-col rounded-t-lg border border-neutral-300 bg-white">
+  <div
+    ref="box"
+    :class="`fixed z-30 flex flex-col border border-neutral-300 bg-white ${expanded ? 'compose-large inset-2 top-4 bottom-4 sm:inset-x-6 sm:top-6 sm:bottom-6' : 'inset-x-0 bottom-0 max-h-[92dvh] sm:inset-x-auto sm:right-6 sm:w-[600px] sm:max-h-[85vh]'}`"
+    :style="!expanded && (boxW || boxH) ? { width: boxW ? `${boxW}px` : undefined, height: boxH ? `${boxH}px` : undefined, maxHeight: 'calc(100vh - 48px)' } : undefined"
+  >
+    <div
+      v-if="!expanded"
+      class="absolute -left-1 -top-1 z-40 h-4 w-4 cursor-nwse-resize"
+      :title="t('resizeCompose')"
+      @mousedown="startResize"
+    />
     <div class="flex items-center justify-between rounded-t-lg bg-black px-4 py-2 text-sm text-white">
       <span>{{ t("newMessage") }}</span>
       <div class="flex items-center gap-1">
@@ -9,7 +19,10 @@
         <button :aria-expanded="optOpen" :class="`cursor-pointer px-2 text-xs ${optOpen ? 'text-white underline' : 'text-white'} hover:text-white`" @click="optOpen = !optOpen">
           {{ optOpen ? t("hide") : t("show") }}
         </button>
-        <button :aria-label="t('close')" class="cursor-pointer" @click="$emit('close')">
+        <button :aria-label="expanded ? t('shrinkCompose') : t('expandCompose')" :title="expanded ? t('shrinkCompose') : t('expandCompose')" class="cursor-pointer" @click="expanded = !expanded">
+          <component :is="expanded ? ShrinkIcon : ExpandIcon" />
+        </button>
+        <button :aria-label="t('close')" class="cursor-pointer" @click="closeCompose">
           <CloseIcon />
         </button>
       </div>
@@ -65,9 +78,9 @@
           {{ t("receipt") }}
         </label>
       </div>
-      <div ref="quillBounds" class="relative">
-        <div class="[&_.ql-toolbar]:border-0 [&_.ql-toolbar]:border-b [&_.ql-toolbar]:border-neutral-300 [&_.ql-container]:border-0 [&_.ql-editor]:min-h-[240px] [&_.ql-editor]:text-sm">
-          <div ref="editor" />
+      <div ref="quillBounds" class="relative flex min-h-0 flex-1 flex-col">
+        <div class="flex min-h-0 flex-1 flex-col [&_.ql-container]:flex [&_.ql-container]:min-h-0 [&_.ql-container]:flex-1 [&_.ql-container]:flex-col [&_.ql-container]:border-0 [&_.ql-editor]:min-h-[240px] [&_.ql-editor]:flex-1 [&_.ql-editor]:overflow-y-auto [&_.ql-editor]:text-sm [&_.ql-toolbar]:border-0 [&_.ql-toolbar]:border-b [&_.ql-toolbar]:border-neutral-300">
+          <div ref="editor" class="flex min-h-0 flex-1 flex-col [&_.ql-container]:flex [&_.ql-container]:min-h-0 [&_.ql-container]:flex-1 [&_.ql-container]:flex-col [&_.ql-editor]:flex-1" />
         </div>
       </div>
       <div
@@ -91,7 +104,7 @@
         </li>
       </ul>
     </div>
-    <div class="flex items-center gap-3 border-t border-neutral-300 px-4 py-3">
+    <div class="flex flex-wrap items-center gap-2 border-t border-neutral-300 px-3 py-3 sm:gap-3 sm:px-4">
       <button
         :disabled="busy"
         class="cursor-pointer bg-black px-5 py-2 text-sm font-medium text-white hover:bg-neutral-700 disabled:opacity-60"
@@ -106,7 +119,7 @@
         >
           <ClockIcon /> {{ t("sendLater") }}
         </button>
-        <div v-if="scheduleOpen" class="absolute bottom-12 left-0 z-40 w-72 rounded-lg border border-neutral-300 bg-white p-3">
+        <div v-if="scheduleOpen" class="absolute bottom-12 left-0 z-40 w-64 rounded-lg border border-neutral-300 bg-white p-3 sm:w-72">
           <label class="block text-xs text-neutral-700">
             {{ t("sendDateTime") }}
             <input
@@ -148,27 +161,27 @@
 
 <script setup lang="ts">
 import type Quill from "quill";
-import { plainToHtml, PRESETS, TOOLBAR } from "~/composables/useMailUtils";
-import { CloseIcon, ClockIcon, PaperclipIcon } from "./mail-ui";
+import { PRESETS, TOOLBAR, nestQuotes, quillToQuote, quoteToQuill } from "~/composables/useMailUtils";
+import { CloseIcon, ClockIcon, PaperclipIcon, ExpandIcon, ShrinkIcon } from "./mail-ui";
 
-type Attachment = { name: string; type: string; size: number; content: string };
+type Attachment = { name: string; type: string; size: number; content: string; cid?: string | null; inline?: boolean };
 
 const props = defineProps<{
-  initial: { key?: string; to?: string; subject?: string; body?: string; inReplyTo?: string; references?: string };
+  initial: { key?: string; to?: string; cc?: string; bcc?: string; subject?: string; body?: string; inReplyTo?: string; references?: string; draftUid?: number; draftMailbox?: string; attachments?: Attachment[] };
   contacts?: string[];
   displayName?: string;
   login: string;
 }>();
 
-const emit = defineEmits<{ (e: "close"): void; (e: "sent"): void }>();
+const emit = defineEmits<{ (e: "close"): void; (e: "sent"): void; (e: "drafted"): void }>();
 
 const { t, dateLocale } = useI18n();
 const to = ref(props.initial.to ?? "");
-const cc = ref("");
-const bcc = ref("");
-const showCc = ref(false);
+const cc = ref(props.initial.cc ?? "");
+const bcc = ref(props.initial.bcc ?? "");
+const showCc = ref(Boolean(props.initial.cc || props.initial.bcc));
 const subject = ref(props.initial.subject ?? "");
-const files = ref<Attachment[]>([]);
+const files = ref<Attachment[]>(props.initial.attachments ?? []);
 const status = ref<string | null>(null);
 const busy = ref(false);
 const editor = ref<HTMLDivElement | null>(null);
@@ -182,6 +195,86 @@ const fromName = ref(props.displayName);
 const priority = ref<"normal" | "high" | "low">("normal");
 const receipt = ref(false);
 const replyTo = ref("");
+const done = ref(false);
+const expanded = ref(false);
+const box = ref<HTMLDivElement | null>(null);
+const boxW = ref<number | null>(null);
+const boxH = ref<number | null>(null);
+
+function startResize(e: MouseEvent) {
+  e.preventDefault();
+  const el = box.value;
+  if (!el) return;
+  const startX = e.clientX;
+  const startY = e.clientY;
+  const startW = el.offsetWidth;
+  const startH = el.offsetHeight;
+  const onMove = (ev: MouseEvent): void => {
+    boxW.value = Math.min(Math.max(startW + (startX - ev.clientX), 360), window.innerWidth - 48);
+    boxH.value = Math.min(Math.max(startH + (startY - ev.clientY), 300), window.innerHeight - 48);
+  };
+  const onUp = (): void => {
+    window.removeEventListener("mousemove", onMove);
+    window.removeEventListener("mouseup", onUp);
+  };
+  window.addEventListener("mousemove", onMove);
+  window.addEventListener("mouseup", onUp);
+}
+
+function hasContent(): boolean {
+  const html = quillRef.value ? quillRef.value.root.innerHTML : "";
+  return Boolean(
+    to.value.trim() || cc.value.trim() || bcc.value.trim() ||
+    subject.value.trim() || files.value.length > 0 ||
+    htmlToText(html),
+  );
+}
+
+async function closeCompose() {
+  if (done.value || !hasContent()) {
+    emit("close");
+    return;
+  }
+  busy.value = true;
+  try {
+    const raw = quillRef.value ? quillRef.value.root.innerHTML : "";
+    const html = nestQuotes(quillToQuote(raw));
+    await $fetch("/api/draft", {
+      method: "POST",
+      body: {
+        to: to.value || undefined,
+        cc: cc.value || undefined,
+        bcc: bcc.value || undefined,
+        subject: subject.value,
+        html,
+        text: htmlToText(html),
+        attachments: files.value.map((f) => ({ name: f.name, type: f.type, content: f.content, cid: f.cid ?? undefined, inline: f.inline })),
+        fromName: fromName.value || undefined,
+        priority: priority.value,
+        receipt: receipt.value,
+        replyTo: replyTo.value || undefined,
+        inReplyTo: props.initial.inReplyTo,
+        references: props.initial.references,
+      },
+    }).catch((e: unknown) => {
+      const d = (e as { data?: { error?: unknown; message?: string } })?.data;
+      throw new Error((typeof d?.error === "string" ? d.error : d?.message) ?? t("draftError"));
+    });
+    if (props.initial.draftUid && props.initial.draftMailbox) {
+      await $fetch("/api/mail/action", {
+        method: "POST",
+        body: { action: "delete", mailbox: props.initial.draftMailbox, uid: props.initial.draftUid },
+      }).catch(() => null);
+    }
+    emit("drafted");
+  } catch (e) {
+    status.value = e instanceof Error ? e.message : t("draftError");
+    return;
+  } finally {
+    busy.value = false;
+  }
+  emit("close");
+}
 
 onMounted(async () => {
   if (!editor.value || quillRef.value) return;
@@ -194,7 +287,7 @@ onMounted(async () => {
     bounds: quillBounds.value ?? undefined,
   });
   quillRef.value = q;
-  if (props.initial.body) q.clipboard.dangerouslyPasteHTML(plainToHtml(props.initial.body));
+  if (props.initial.body) q.clipboard.dangerouslyPasteHTML(quoteToQuill(props.initial.body));
 });
 
 onUnmounted(() => {
@@ -239,7 +332,8 @@ async function schedule() {
   busy.value = true;
   status.value = t("savingDraft");
   try {
-    const html = quillRef.value ? quillRef.value.root.innerHTML : "";
+    const raw = quillRef.value ? quillRef.value.root.innerHTML : "";
+    const html = nestQuotes(quillToQuote(raw));
     const res = await $fetch("/api/schedule", {
       method: "POST",
       body: {
@@ -263,6 +357,7 @@ async function schedule() {
       throw new Error((typeof d?.error === "string" ? d.error : d?.message) ?? t("scheduleError"));
     });
     void res;
+    done.value = true;
     status.value = `${t("scheduledFor")} ${new Date(scheduleAt.value).toLocaleString(dateLocale.value)}`;
     emit("sent");
     setTimeout(() => emit("close"), 900);
@@ -281,7 +376,7 @@ async function send() {
   busy.value = true;
   status.value = t("sending");
   try {
-    const html = quillRef.value ? quillRef.value.root.innerHTML : "";
+    const html = nestQuotes(quillToQuote(quillRef.value ? quillRef.value.root.innerHTML : ""));
     const text = htmlToText(html);
     await $fetch("/api/send", {
       method: "POST",
@@ -292,7 +387,7 @@ async function send() {
         subject: subject.value,
         text,
         html,
-        attachments: files.value.map((f) => ({ name: f.name, type: f.type, content: f.content })),
+        attachments: files.value.map((f) => ({ name: f.name, type: f.type, content: f.content, cid: f.cid ?? undefined, inline: f.inline })),
         fromName: fromName.value || undefined,
         priority: priority.value,
         receipt: receipt.value,
@@ -304,7 +399,14 @@ async function send() {
       const d = (e as { data?: { error?: unknown; message?: string } })?.data;
       throw new Error((typeof d?.error === "string" ? d.error : d?.message) ?? t("sendError"));
     });
+    if (props.initial.draftUid && props.initial.draftMailbox) {
+      await $fetch("/api/mail/action", {
+        method: "POST",
+        body: { action: "delete", mailbox: props.initial.draftMailbox, uid: props.initial.draftUid },
+      }).catch(() => null);
+    }
     status.value = t("sent");
+    done.value = true;
     emit("sent");
     setTimeout(() => emit("close"), 800);
   } catch (e) {

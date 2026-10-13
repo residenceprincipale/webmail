@@ -5,7 +5,7 @@ import { smtpHost, SMTP_PORT } from "../utils/provider";
 const MAX_ATTACHMENTS = 10;
 const MAX_FILE_BYTES = 20 * 1024 * 1024;
 
-type Attachment = { name?: string; type?: string; content?: string };
+type Attachment = { name?: string; type?: string; content?: string; cid?: string; inline?: boolean };
 
 export default defineEventHandler(async (event) => {
   const origin = assertSameOrigin(event);
@@ -69,7 +69,7 @@ export default defineEventHandler(async (event) => {
 
   try {
     await transport.sendMail({
-      from: { name: fromName ?? "Webmail", address: session.login },
+      from: fromName ? { name: fromName, address: session.login } : session.login,
       to,
       cc: body.cc?.trim() || undefined,
       bcc: body.bcc?.trim() || undefined,
@@ -83,6 +83,8 @@ export default defineEventHandler(async (event) => {
         filename: f.name || "attachment",
         content: Buffer.from(f.content!, "base64"),
         contentType: f.type || undefined,
+        cid: f.cid || undefined,
+        contentDisposition: f.inline ? "inline" : undefined,
       })),
     });
     return { ok: true, attachments: files.length };

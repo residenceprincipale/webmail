@@ -34,4 +34,6 @@ export type MailDetail = MailSummary & {
   html: string | null;
   text: string | null;
   files: MailAttachment[];
+  cc: Array<{ name?: string; address: string }>;
+  bcc: Array<{ name?: string; address: string }>;
 };

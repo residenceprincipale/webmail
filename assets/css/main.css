@@ -112,23 +112,60 @@ html.dark .wm-check:indeterminate { background: #ffffff; }
 html.dark .wm-check:indeterminate::before { border-color: #000000; }
 html.dark .wm-check:focus-visible { outline-color: #ffffff; }
 
-/* Gmail-style quotes. */
+/* Mail HTML must not overflow narrow screens. */
+.thread-html {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+.thread-html img,
+.thread-html table {
+  max-width: 100%;
+  height: auto;
+}
+.thread-html table {
+  display: block;
+  overflow-x: auto;
+}
+.thread-html pre {
+  white-space: pre-wrap;
+  overflow-x: auto;
+}
+/* Nested quote bars: no vertical margin so sibling bars touch, padding keeps air. */
 .thread-html blockquote {
-  margin: 8px 0 8px 4px;
-  padding-left: 12px;
+  margin: 0 0 0 4px;
+  padding: 6px 0 6px 12px;
   border-left: 2px solid #000000;
 }
 html.dark .thread-html blockquote { border-left-color: #ffffff; }
+.ql-snow .ql-editor blockquote {
+  margin: 0 0 0 4px;
+  padding: 6px 0 6px 12px;
+  border-left: 2px solid #000000;
+}
+html.dark .ql-snow .ql-editor blockquote { border-left-color: #ffffff; }
+/* Faked nesting: Quill keeps blockquotes flat, so each depth draws its own
+   bars as background stripes (box-shadow is wiped by the global reset). */
+.ql-snow .ql-editor blockquote.ql-indent-1 { margin-left: 4px; padding-left: 28px; background-image: linear-gradient(#000000, #000000); background-size: 2px 100%; background-position: 16px 0; background-repeat: no-repeat; }
+.ql-snow .ql-editor blockquote.ql-indent-2 { margin-left: 4px; padding-left: 44px; background-image: linear-gradient(#000000, #000000), linear-gradient(#000000, #000000); background-size: 2px 100%; background-position: 16px 0, 32px 0; background-repeat: no-repeat; }
+.ql-snow .ql-editor blockquote.ql-indent-3 { margin-left: 4px; padding-left: 60px; background-image: linear-gradient(#000000, #000000), linear-gradient(#000000, #000000), linear-gradient(#000000, #000000); background-size: 2px 100%; background-position: 16px 0, 32px 0, 48px 0; background-repeat: no-repeat; }
+.ql-snow .ql-editor blockquote.ql-indent-4 { margin-left: 4px; padding-left: 76px; background-image: linear-gradient(#000000, #000000), linear-gradient(#000000, #000000), linear-gradient(#000000, #000000), linear-gradient(#000000, #000000); background-size: 2px 100%; background-position: 16px 0, 32px 0, 48px 0, 64px 0; background-repeat: no-repeat; }
+.ql-snow .ql-editor blockquote.ql-indent-5 { margin-left: 4px; padding-left: 92px; background-image: linear-gradient(#000000, #000000), linear-gradient(#000000, #000000), linear-gradient(#000000, #000000), linear-gradient(#000000, #000000), linear-gradient(#000000, #000000); background-size: 2px 100%; background-position: 16px 0, 32px 0, 48px 0, 64px 0, 80px 0; background-repeat: no-repeat; }
+.ql-snow .ql-editor blockquote.ql-indent-6 { margin-left: 4px; padding-left: 108px; background-image: linear-gradient(#000000, #000000), linear-gradient(#000000, #000000), linear-gradient(#000000, #000000), linear-gradient(#000000, #000000), linear-gradient(#000000, #000000), linear-gradient(#000000, #000000); background-size: 2px 100%; background-position: 16px 0, 32px 0, 48px 0, 64px 0, 80px 0, 96px 0; background-repeat: no-repeat; }
+.ql-snow .ql-editor blockquote.ql-indent-7 { margin-left: 4px; padding-left: 124px; background-image: linear-gradient(#000000, #000000), linear-gradient(#000000, #000000), linear-gradient(#000000, #000000), linear-gradient(#000000, #000000), linear-gradient(#000000, #000000), linear-gradient(#000000, #000000), linear-gradient(#000000, #000000); background-size: 2px 100%; background-position: 16px 0, 32px 0, 48px 0, 64px 0, 80px 0, 96px 0, 112px 0; background-repeat: no-repeat; }
+.ql-snow .ql-editor blockquote.ql-indent-8 { margin-left: 4px; padding-left: 140px; background-image: linear-gradient(#000000, #000000), linear-gradient(#000000, #000000), linear-gradient(#000000, #000000), linear-gradient(#000000, #000000), linear-gradient(#000000, #000000), linear-gradient(#000000, #000000), linear-gradient(#000000, #000000), linear-gradient(#000000, #000000); background-size: 2px 100%; background-position: 16px 0, 32px 0, 48px 0, 64px 0, 80px 0, 96px 0, 112px 0, 128px 0; background-repeat: no-repeat; }
+html.dark .ql-snow .ql-editor blockquote.ql-indent-1, html.dark .ql-snow .ql-editor blockquote.ql-indent-2, html.dark .ql-snow .ql-editor blockquote.ql-indent-3, html.dark .ql-snow .ql-editor blockquote.ql-indent-4, html.dark .ql-snow .ql-editor blockquote.ql-indent-5, html.dark .ql-snow .ql-editor blockquote.ql-indent-6, html.dark .ql-snow .ql-editor blockquote.ql-indent-7, html.dark .ql-snow .ql-editor blockquote.ql-indent-8 { background-image: linear-gradient(#ffffff, #ffffff), linear-gradient(#ffffff, #ffffff), linear-gradient(#ffffff, #ffffff), linear-gradient(#ffffff, #ffffff), linear-gradient(#ffffff, #ffffff), linear-gradient(#ffffff, #ffffff), linear-gradient(#ffffff, #ffffff), linear-gradient(#ffffff, #ffffff); }
 .thread-html .quoted-toggle {
   display: inline-block;
   cursor: pointer;
-  padding: 0 8px;
-  font-size: 13px;
-  color: #ffffff;
-  background: #000000;
+  padding: 8px 12px;
+  font-size: 14px;
+  color: #000000;
+  background: transparent;
   border: none;
 }
-html.dark .thread-html .quoted-toggle { color: #000000; background: #ffffff; }
+.thread-html .quoted-toggle:hover { background: #f5f5f5; }
+html.dark .thread-html .quoted-toggle { color: #ffffff; }
+html.dark .thread-html .quoted-toggle:hover { background: #262626; }
 
 /* Quill visual tweaks. */
 .ql-toolbar.ql-snow .ql-stroke {
@@ -165,8 +202,16 @@ html.dark .thread-html .quoted-toggle { color: #000000; background: #ffffff; }
 .ql-snow .ql-editor a { color: #000000; }
 html.dark .ql-snow .ql-editor a { color: #ffffff; }
 /* Quill tooltip positioning notes. */
+.ql-container.ql-snow {
+  display: flex;
+  min-height: 0;
+  flex: 1;
+  flex-direction: column;
+}
 .ql-container .ql-editor {
-  max-height: 220px;
+  flex: 1;
+  min-height: 240px;
+  max-height: none;
   overflow-y: auto;
 }
 .ql-container .ql-tooltip {

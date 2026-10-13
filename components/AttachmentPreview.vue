@@ -1,6 +1,6 @@
 <template>
   <ul class="flex flex-wrap gap-2 border-t border-neutral-300 py-3">
-    <li v-for="f in files" :key="f.index" class="w-40 border border-neutral-300 bg-white text-xs">
+    <li v-for="f in files" :key="f.index" class="w-36 border border-neutral-300 bg-white text-xs sm:w-40">
       <button
         v-if="isImage(f) && urlFor(f.partId)"
         class="block w-full cursor-zoom-in"
@@ -29,7 +29,7 @@
   </ul>
   <div
     v-if="zoom"
-    class="fixed inset-0 z-50 flex cursor-zoom-out items-center justify-center bg-black/80 p-8"
+    class="fixed inset-0 z-50 flex cursor-zoom-out items-center justify-center bg-black/80 p-4 sm:p-8"
     @click="zoom = null"
   >
     <img :src="zoom" alt="" class="max-h-full max-w-full object-contain" >

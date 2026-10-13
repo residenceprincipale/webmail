@@ -38,7 +38,6 @@
         </button>
         <button class="cursor-pointer px-3 py-2 text-sm text-black hover:bg-neutral-100">Texte</button>
         <button class="cursor-pointer bg-black px-5 py-2 text-sm font-medium text-white opacity-60" disabled>Désactivé</button>
-        <IconBtn label="Archiver" :on-click="() => {}"><ArchiveIcon /></IconBtn>
         <IconBtn label="Supprimer" :on-click="() => {}"><TrashIcon /></IconBtn>
         <IconBtn label="Répondre" :on-click="() => {}"><ReplyIcon /></IconBtn>
         <IconBtn label="Fermer" :on-click="() => {}"><CloseIcon /></IconBtn>
@@ -136,7 +135,7 @@
 import {
   CheckboxAll, IconBtn, Avatar, Badge,
   MenuIcon, SearchIcon, FilterIcon, PencilIcon, StarIcon, StarFilledIcon,
-  ArchiveIcon, SpamIcon, TrashIcon, FolderIcon, InboxIcon, PaperclipIcon,
+ SpamIcon, TrashIcon, FolderIcon, InboxIcon, PaperclipIcon,
   ReplyIcon, CloseIcon, ClockIcon, ReloadIcon, BoxIcon, MailOpenIcon,
   EyeIcon, EyeClosedIcon,
 } from "~/components/mail-ui";
@@ -160,7 +159,6 @@ const ICONS: [string, unknown][] = [
   ["Crayon", PencilIcon],
   ["Étoile", StarIcon],
   ["Étoile pleine", StarFilledIcon],
-  ["Archive", ArchiveIcon],
   ["Spam", SpamIcon],
   ["Corbeille", TrashIcon],
   ["Dossier", FolderIcon],

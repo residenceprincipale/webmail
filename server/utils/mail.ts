@@ -30,6 +30,8 @@ export type MailDetail = MailSummary & {
   files: Array<{ index: number; partId: string; filename: string; contentType: string; size: number; inline: boolean; contentId: string | null }>;
   messageId: string | null;
   references: string | null;
+  cc: Array<{ name?: string; address: string }>;
+  bcc: Array<{ name?: string; address: string }>;
 };
 
 export type Creds = { host: string; login: string; password: string };
@@ -272,6 +274,14 @@ export async function getMessage(
     : { html: null, text: null, attachments: [], messageId: undefined, references: undefined } as Awaited<ReturnType<typeof simpleParser>>;
   const html = typeof parsed.html === "string" ? parsed.html : null;
   const text = typeof parsed.text === "string" ? parsed.text : null;
+  const addrList = (v: unknown): Array<{ name?: string; address: string }> => {
+    const arr = Array.isArray(v) ? v : v ? [v] : [];
+    return arr.flatMap((a) => {
+      const val = (a as { value?: Array<{ name?: string; address?: string }> }).value ?? [];
+      return val.map((e) => ({ name: e.name || undefined, address: e.address ?? "" }));
+    });
+  };
+  const hdrs = parsed.headers as unknown as Map<string, unknown> | undefined;
   const msgId = parsed.messageId ?? null;
   const refList = Array.isArray(parsed.references)
     ? parsed.references
@@ -291,7 +301,7 @@ export async function getMessage(
 
   await client.messageFlagsAdd(String(uid), ["\\Seen"], { uid: true }).catch(() => {});
 
-  return { ...base, html, text, files, messageId: msgId, references: refsChain };
+  return { ...base, html, text, files, messageId: msgId, references: refsChain, cc: addrList(hdrs?.get("cc")), bcc: addrList(hdrs?.get("bcc")) };
 }
 
 export async function setFlags(
@@ -316,6 +326,47 @@ export async function moveMessage(
   await client.messageMove(range, target, { uid: true });
 }
 
+const SYSTEM_LEAVES = new Set(["inbox", "sent", "drafts", "trash", "junk", "spam", "archive"]);
+const FOLDER_NAME_RE = /^[\p{L}\p{N}][\p{L}\p{N} _-]{0,63}$/u;
+
+export function cleanFolderName(name: unknown): string {
+  const n = typeof name === "string" ? name.trim().replace(/\s+/g, " ") : "";
+  if (!FOLDER_NAME_RE.test(n)) throw new Error("Invalid folder name");
+  return n;
+}
+
+export function isSystemMailbox(m: { path: string; specialUse?: string }): boolean {
+  if (m.specialUse) return true;
+  const leaf = (m.path ?? "").split(".").pop()?.toLowerCase() ?? "";
+  return SYSTEM_LEAVES.has(leaf);
+}
+
+export async function createMailbox(client: ImapFlow, name: unknown): Promise<string> {
+  const path = cleanFolderName(name);
+  await client.mailboxCreate(path);
+  return path;
+}
+
+export async function renameMailbox(client: ImapFlow, oldPath: string, newName: unknown): Promise<string> {
+  const box = (await listMailboxes(client)).find((b) => b.path === oldPath);
+  if (!box) throw new Error("Mailbox not found");
+  if (isSystemMailbox(box)) throw new Error("System mailbox");
+  const next = cleanFolderName(newName);
+  if (next === oldPath) return next;
+  await client.mailboxRename(oldPath, next);
+  return next;
+}
+
+export async function deleteMailbox(client: ImapFlow, path: string): Promise<void> {
+  const box = (await listMailboxes(client)).find((b) => b.path === path);
+  if (!box) throw new Error("Mailbox not found");
+  if (isSystemMailbox(box)) throw new Error("System mailbox");
+  const status = await client.status(path, { messages: true }).catch(() => null);
+  const count = status && typeof status === "object" ? (status.messages ?? 0) : 0;
+  if (count > 0) throw new Error("Folder not empty");
+  await client.mailboxDelete(path);
+}
+
 const TRASH_ALIASES = ["INBOX.Trash", "INBOX.INBOX.Trash"];
 
 function isTrash(path: string): boolean {
@@ -337,4 +388,21 @@ export async function deleteMessage(
   }
   await openBox(client, mailboxPath, false);
   await client.messageDelete(range, { uid: true });
+}
+
+const TRASH_RETENTION_DAYS = 30;
+const PURGE_THROTTLE_MS = 24 * 60 * 60 * 1000;
+const lastPurge = new Map<string, number>();
+
+export async function purgeOldTrash(client: ImapFlow, trashPath: string, login: string): Promise<number> {
+  const last = lastPurge.get(login) ?? 0;
+  if (Date.now() - last < PURGE_THROTTLE_MS) return 0;
+  lastPurge.set(login, Date.now());
+  const cutoff = new Date(Date.now() - TRASH_RETENTION_DAYS * 24 * 60 * 60 * 1000);
+  await openBox(client, trashPath, false);
+  const found = await client.search({ before: cutoff }, { uid: true });
+  const uids = Array.isArray(found) ? found : [];
+  if (!uids.length) return 0;
+  await client.messageDelete(uids.join(","), { uid: true });
+  return uids.length;
 }

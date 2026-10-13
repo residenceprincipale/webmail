@@ -1,6 +1,6 @@
 <template>
-  <div class="flex h-screen flex-col bg-white text-[13px] text-black">
-    <header class="flex h-16 items-center gap-4 border-b border-neutral-300 px-4">
+  <div class="flex h-dvh flex-col bg-white text-[13px] text-black">
+    <header class="flex h-14 shrink-0 items-center gap-2 border-b border-neutral-300 px-3 sm:h-16 sm:gap-4 sm:px-4">
       <div class="flex items-center gap-2">
         <button
           :aria-label="t('toggleMenu')"
@@ -10,14 +10,14 @@
           <MenuIcon />
         </button>
       </div>
-      <div class="relative mx-2 flex-1">
-        <div class="flex h-10 items-center rounded-full border border-neutral-300 bg-white px-4">
+      <div class="relative mx-0 min-w-0 flex-1 sm:mx-2">
+        <div class="flex h-10 items-center rounded-full border border-neutral-300 bg-white px-3 sm:px-4">
           <SearchIcon />
           <input
             v-model="query"
             :placeholder="t('search')"
             :aria-label="t('search')"
-            class="ml-3 h-full flex-1 bg-transparent text-sm outline-none focus-visible:ring-2 focus-visible:ring-black"
+            class="ml-2 h-full min-w-0 flex-1 bg-transparent text-sm outline-none focus-visible:ring-2 focus-visible:ring-black"
             @input="query.trim() || (results = null)"
             @keydown.enter="runSearch(query)"
           >
@@ -29,8 +29,8 @@
             <FilterIcon />
           </button>
         </div>
-        <div v-if="showFilters" class="absolute left-0 top-12 z-30 w-[420px] rounded-lg border border-neutral-300 bg-white p-4">
-          <div class="grid grid-cols-2 gap-3">
+        <div v-if="showFilters" class="absolute left-0 top-12 z-30 w-[calc(100vw-2.5rem)] max-w-[420px] rounded-lg border border-neutral-300 bg-white p-4 sm:w-[420px]">
+          <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <label class="text-xs text-neutral-700">
               {{ t("fromL") }}
               <input
@@ -47,7 +47,7 @@
                 class="mt-1 w-full rounded border border-neutral-300 px-3 py-2 text-sm text-black outline-none focus:border-black"
               >
             </label>
-            <label class="col-span-2 text-xs text-neutral-700">
+            <label class="sm:col-span-2 text-xs text-neutral-700">
               {{ t("subject") }}
               <input
                 v-model="filters.subject"
@@ -55,7 +55,7 @@
                 class="mt-1 w-full rounded border border-neutral-300 px-3 py-2 text-sm text-black outline-none focus:border-black"
               >
             </label>
-            <label class="col-span-2 text-xs text-neutral-700">
+            <label class="sm:col-span-2 text-xs text-neutral-700">
               {{ t("containsL") }}
               <input
                 v-model="filters.text"
@@ -63,7 +63,7 @@
                 class="mt-1 w-full rounded border border-neutral-300 px-3 py-2 text-sm text-black outline-none focus:border-black"
               >
             </label>
-            <label class="col-span-2 flex cursor-pointer items-center gap-2 text-xs text-neutral-700">
+            <label class="sm:col-span-2 flex cursor-pointer items-center gap-2 text-xs text-neutral-700">
               <input v-model="filters.flagged" type="checkbox" class="wm-check cursor-pointer" >
               {{ t("flaggedOnly") }}
             </label>
@@ -84,7 +84,7 @@
           </div>
         </div>
       </div>
-      <div class="flex items-center gap-1 text-xs font-medium text-neutral-700">
+      <div class="flex shrink-0 items-center gap-1 text-xs font-medium text-neutral-700">
         <button :aria-pressed="locale === 'fr'" title="Français" :class="localeBtn('fr')" @click="locale = 'fr'">FR</button>
         <button :aria-pressed="locale === 'en'" title="English" :class="localeBtn('en')" @click="locale = 'en'">EN</button>
         <button
@@ -94,7 +94,7 @@
           @click="dark = !dark"
         >{{ dark ? "☀" : "☾" }}</button>
       </div>
-      <div class="relative">
+      <div class="relative shrink-0">
         <button
           :aria-label="t('accountMenu')"
           class="h-9 w-9 cursor-pointer overflow-hidden rounded-full bg-black text-sm font-medium text-white"
@@ -103,7 +103,8 @@
           <img v-if="photo" :src="photo" alt="" class="h-full w-full object-cover" >
           <template v-else>{{ (displayName || login).slice(0, 1).toUpperCase() }}</template>
         </button>
-        <div v-if="menuOpen" class="absolute right-0 top-11 z-20 w-64 rounded-lg border border-neutral-300 bg-white py-2">
+        <div v-if="menuOpen" class="fixed inset-0 z-40 cursor-default" @click="menuOpen = false" />
+        <div v-if="menuOpen" class="absolute right-0 top-11 z-50 w-64 rounded-lg border border-neutral-300 bg-white py-2 shadow-lg">
           <p class="px-4 py-2 text-xs text-neutral-700">{{ t("connected") }}</p>
           <p v-if="displayName" class="px-4 text-sm font-medium">{{ displayName }}</p>
           <p class="px-4 pb-2 text-sm break-all text-neutral-700">{{ login }}</p>
@@ -119,6 +120,14 @@
           >
             {{ t("changePassword") }}
           </button>
+          <a
+            href="https://github.com/residenceprincipale/webmail/issues"
+            target="_blank"
+            rel="noopener"
+            class="block w-full cursor-pointer px-4 py-2 text-left text-sm hover:bg-neutral-100"
+          >
+            {{ t("needHelp") }}
+          </a>
           <button
             class="block w-full cursor-pointer px-4 py-2 text-left text-sm hover:bg-neutral-100"
             @click="logout"
@@ -130,8 +139,13 @@
     </header>
 
     <div class="relative flex min-h-0 flex-1">
+      <div
+        v-if="!navCollapsed"
+        class="fixed inset-0 z-10 bg-black/40 sm:hidden"
+        @click="navOpen = 'icons'"
+      />
       <aside
-        class="shrink-0 overflow-y-auto overflow-x-hidden overflow-visible py-3 pr-3"
+        :class="`shrink-0 overflow-y-auto overflow-x-hidden bg-white py-3 pr-3 ${navCollapsed ? 'hidden sm:block' : 'fixed inset-y-0 left-0 z-20 sm:static'}`"
         :style="{ width: navCollapsed ? '68px' : navWidth + 'px' }"
       >
         <button
@@ -144,21 +158,55 @@
           <template v-if="!navCollapsed">{{ t("newMessage") }}</template>
         </button>
         <nav class="space-y-0.5">
-          <button
+          <div
             v-for="mb in mailboxes"
             :key="mb.path"
+            :class="`group relative ${dropTarget === mb.path ? 'outline outline-2 outline-black' : ''}`"
+            @dragover.prevent="dropTarget = mb.path"
+            @dragleave="dropTarget = null"
+            @drop.prevent="dropOn(mb.path)"
+          >
+          <button
             :title="mb.name"
             :class="`relative flex h-9 w-full cursor-pointer items-center gap-4 text-left text-[13px] ${mb.path === selected ? 'bg-black font-medium text-white' : 'hover:bg-neutral-100'} ${navCollapsed ? 'justify-center pl-0 pr-0' : 'pl-6 pr-3'}`"
             @click="selectMailbox(mb.path)"
           >
-            <BoxIcon :kind="mb.specialUse ?? (mb.path === 'INBOX' ? '\\Inbox' : '')" />
-            <Badge v-if="navCollapsed && mb.unseen > 0" :count="mb.unseen" floating />
+            <BoxIcon :kind="mb.specialUse ?? ''" />
+            <Badge v-if="navCollapsed && badgeCount(mb) > 0" :count="badgeCount(mb)" floating />
             <template v-else-if="!navCollapsed">
               <span class="flex-1 truncate">{{ mb.name }}</span>
-              <Badge v-if="mb.unseen > 0" :count="mb.unseen" />
+              <Badge v-if="badgeCount(mb) > 0" :count="badgeCount(mb)" />
             </template>
           </button>
+          <div
+            v-if="!navCollapsed && isCustomBox(mb)"
+            class="absolute right-1 top-1/2 hidden -translate-y-1/2 items-center gap-0.5 rounded border border-neutral-300 bg-white px-0.5 group-hover:flex"
+            @click.stop
+          >
+            <button
+              :title="t('renameFolder')"
+              :aria-label="t('renameFolder')"
+              class="cursor-pointer p-1 text-black hover:bg-neutral-100"
+              @click="folderDialog = { mode: 'rename', path: mb.path, name: mb.name }; folderError = null"
+            ><PencilIcon /></button>
+            <button
+              :title="t('deleteFolder')"
+              :aria-label="t('deleteFolder')"
+              class="cursor-pointer p-1 text-black hover:bg-neutral-100"
+              @click="folderDialog = { mode: 'delete', path: mb.path, name: mb.name }; folderError = null"
+            ><TrashIcon /></button>
+          </div>
+          </div>
         </nav>
+        <button
+          v-if="!navCollapsed"
+          :title="t('newFolder')"
+          class="mt-2 flex h-9 w-full cursor-pointer items-center gap-4 pl-6 pr-3 text-left text-[13px] text-neutral-700 hover:bg-neutral-100"
+          @click="folderDialog = { mode: 'create', name: '' }; folderError = null"
+        >
+          <PlusIcon />
+          <span class="truncate">{{ t("newFolder") }}</span>
+        </button>
       </aside>
       <div
         v-if="!navCollapsed"
@@ -166,12 +214,12 @@
         aria-orientation="vertical"
         :aria-label="t('resizePanel')"
         :title="t('dragResize')"
-        class="w-1 shrink-0 cursor-col-resize bg-transparent transition-colors hover:bg-black active:bg-black"
+        class="hidden w-1 shrink-0 cursor-col-resize bg-transparent transition-colors hover:bg-black active:bg-black sm:block"
         @pointerdown="startResize"
       />
 
-      <main class="flex min-w-0 flex-1 flex-col border-l border-neutral-300">
-        <div class="relative flex h-12 items-center gap-1 border-b border-neutral-300 px-4">
+      <main class="flex min-w-0 flex-1 flex-col sm:border-l sm:border-neutral-300">
+        <div class="relative flex h-12 shrink-0 items-center gap-1 overflow-x-auto border-b border-neutral-300 px-2 sm:px-4">
           <CheckboxAll
             :count="threads.reduce((n, th) => n + th.all.length, 0)"
             :checked-count="checked.size"
@@ -184,8 +232,8 @@
             </span>
           </IconBtn>
           <template v-if="checked.size > 0">
-            <IconBtn :label="t('archive')" :on-click="() => act('move', 'Archive')"><ArchiveIcon /></IconBtn>
-            <IconBtn :label="t('spam')" :on-click="() => act('move', 'Junk')"><SpamIcon /></IconBtn>
+            <IconBtn v-if="isTrash" :label="t('restore')" :on-click="() => act('move', 'INBOX')"><RestoreIcon /></IconBtn>
+            <IconBtn v-if="!isTrash" :label="t('spam')" :on-click="() => act('move', 'Junk')"><SpamIcon /></IconBtn>
             <IconBtn :label="t('delete')" :on-click="() => act('delete')"><TrashIcon /></IconBtn>
             <IconBtn :label="t('moveTo')" :on-click="() => (moveOpen = !moveOpen)"><FolderIcon /></IconBtn>
           </template>
@@ -199,8 +247,8 @@
               {{ mb.name }}
             </button>
           </div>
-          <div class="ml-auto flex items-center gap-2 text-xs text-neutral-700">
-            <span>
+          <div class="ml-auto flex shrink-0 items-center gap-1 text-xs text-neutral-700">
+            <span class="hidden sm:inline">
               {{ total === 0 ? "0" : page * PAGE_SIZE + 1 }}-{{ Math.min(total, (page + 1) * PAGE_SIZE) }}
               {{ t("of") }} {{ total }}
             </span>
@@ -237,11 +285,16 @@
               :count="th.count"
               :active="th.head.uid === openUid || openThread.some((d) => d.uid === th.head.uid)"
               :checked="th.all.map((x) => x.uid).every((u) => checked.has(u))"
+              :in-trash="isTrash"
+              :mailboxes="mailboxes"
+              :current-mailbox="selected"
               @check="toggleThread(th)"
               @open="open(th.head)"
               @star="onStar(th.head)"
-              @archive="act('move', 'Archive', [th.head.uid])"
-              @delete="act('delete', undefined, [th.head.uid])"
+              @move="(target) => act('move', target, th.all.map((x) => x.uid))"
+              @dragstart="dragUids = th.all.map((x) => x.uid)"
+              @delete="act('delete', undefined, th.all.map((x) => x.uid))"
+              @restore="act('move', 'INBOX', th.all.map((x) => x.uid))"
               @seen="toggleSeen(th.head)"
             />
           </ul>
@@ -250,8 +303,8 @@
 
       <div
         v-if="openMail && view === 'over'"
-        class="absolute inset-y-0 right-0 z-20 flex min-w-0 flex-col bg-white"
-        :style="{ left: (navCollapsed ? 68 : navWidth + 4) + 'px' }"
+        class="absolute inset-0 z-20 flex min-w-0 flex-col bg-white sm:inset-y-0 sm:right-0 sm:left-auto"
+        :style="isMobile ? undefined : { left: (navCollapsed ? 68 : navWidth + 4) + 'px' }"
       >
         <MessageView
           :mail="openMail"
@@ -260,11 +313,12 @@
           :current-mailbox="selected"
           :mailbox-path="selected"
           :thread="openThread"
+          :in-trash="isTrash"
           @reply="makeReply(openMail!)"
           @star="onStar(openMail!)"
-          @archive="act('move', 'Archive', [openMail!.uid])"
           @spam="act('move', 'Junk', [openMail!.uid])"
-          @delete="act('delete', undefined, [openMail!.uid])"
+          @delete="act('delete', undefined, openThread.length ? openThread.map((d) => d.uid) : [openMail!.uid])"
+          @restore="act('move', 'INBOX', openThread.length ? openThread.map((d) => d.uid) : [openMail!.uid])"
           @seen="toggleSeen(openMail!)"
           @move="(target) => act('move', target, [openMail!.uid])"
           @view="(v) => (view = v)"
@@ -280,11 +334,12 @@
           :current-mailbox="selected"
           :mailbox-path="selected"
           :thread="openThread"
+          :in-trash="isTrash"
           @reply="makeReply(openMail!)"
           @star="onStar(openMail!)"
-          @archive="act('move', 'Archive', [openMail!.uid])"
           @spam="act('move', 'Junk', [openMail!.uid])"
-          @delete="act('delete', undefined, [openMail!.uid])"
+          @delete="act('delete', undefined, openThread.length ? openThread.map((d) => d.uid) : [openMail!.uid])"
+          @restore="act('move', 'INBOX', openThread.length ? openThread.map((d) => d.uid) : [openMail!.uid])"
           @seen="toggleSeen(openMail!)"
           @move="(target) => act('move', target, [openMail!.uid])"
           @view="(v) => (view = v)"
@@ -301,13 +356,50 @@
       :display-name="displayName"
       :login="login"
       @close="compose = null"
-      @sent="toast = t('sentToast')"
+      @sent="onSent"
+      @drafted="onDrafted"
     />
-    <div v-if="toast" role="status" class="fixed bottom-6 left-6 z-40 flex items-center gap-3 rounded bg-black px-4 py-3 text-sm text-white">
+    <div v-if="toast" role="status" class="fixed bottom-4 left-4 right-4 z-40 flex items-center gap-3 rounded bg-black px-4 py-3 text-sm text-white sm:bottom-6 sm:left-6 sm:right-auto">
       <span>{{ toast }}</span>
       <button class="text-white" :aria-label="t('closeNotif')" @click="toast = null">
         OK
       </button>
+    </div>
+    <div v-if="folderDialog" class="fixed inset-0 z-40 flex items-center justify-center bg-black/40 px-4">
+      <div class="max-h-[85dvh] w-full max-w-[440px] overflow-y-auto rounded-2xl bg-white p-5 sm:p-6">
+        <h2 class="mb-4 text-lg font-medium">{{
+          folderDialog.mode === "create" ? t("newFolder")
+          : folderDialog.mode === "rename" ? t("renameFolder")
+          : t("deleteFolder")
+        }}</h2>
+        <form class="flex flex-col gap-3" @submit.prevent="submitFolder">
+          <p v-if="folderDialog.mode === 'delete'" class="text-sm">
+            {{ t("confirmDeleteFolder") }} — {{ folderDialog.name }}
+          </p>
+          <label v-else class="text-xs text-neutral-700">
+            {{ t("folderName") }}
+            <input
+              v-model="folderDialog.name"
+              required
+              maxlength="64"
+              class="mt-1 w-full rounded border border-neutral-300 px-3 py-2 text-sm text-black outline-none focus:border-black"
+            >
+          </label>
+          <p v-if="folderError" role="alert" class="rounded border border-neutral-300 bg-white px-3 py-2 text-xs text-black">{{ folderError }}</p>
+          <div class="flex justify-end gap-2">
+            <button type="button" class="px-3 py-2 text-sm text-black" @click="folderDialog = null">
+              {{ t("cancel") }}
+            </button>
+            <button
+              type="submit"
+              :disabled="folderBusy"
+              class="cursor-pointer bg-black px-5 py-2 text-sm font-medium text-white"
+            >
+              {{ folderDialog.mode === "create" ? t("createFolder") : folderDialog.mode === "rename" ? t("save") : t("delete") }}
+            </button>
+          </div>
+        </form>
+      </div>
     </div>
     <PasswordDialog v-if="pwdOpen" @close="pwdOpen = false" />
     <ProfileDialog
@@ -323,10 +415,10 @@
 
 <script setup lang="ts">
 import type { Mailbox, MailSummary, MailDetail } from "~/lib/types";
-import { PAGE_SIZE, stripHtml, escapeHtml } from "~/composables/useMailUtils";
+import { PAGE_SIZE, stripHtml, escapeHtml, plainToHtml, nestQuotes } from "~/composables/useMailUtils";
 import {
-  MenuIcon, SearchIcon, FilterIcon, PencilIcon, BoxIcon, Badge,
-  CheckboxAll, IconBtn, ReloadIcon, ArchiveIcon, SpamIcon, TrashIcon,
+  MenuIcon, SearchIcon, FilterIcon, PencilIcon, PlusIcon, BoxIcon, Badge,
+  CheckboxAll, IconBtn, ReloadIcon, SpamIcon, TrashIcon, RestoreIcon,
   FolderIcon, InboxIcon,
 } from "./mail-ui";
 
@@ -357,14 +449,22 @@ const loading = ref(true);
 const compose = ref<{
   key?: string;
   to?: string;
+  cc?: string;
+  bcc?: string;
   subject?: string;
   body?: string;
   inReplyTo?: string;
   references?: string;
+  draftUid?: number;
+  draftMailbox?: string;
+  attachments?: { name: string; type: string; size: number; content: string; cid?: string | null; inline?: boolean }[];
 } | null>(null);
 const menuOpen = ref(false);
 const pwdOpen = ref(false);
 const profileOpen = ref(false);
+const folderDialog = ref<{ mode: "create" | "rename" | "delete"; path?: string; name: string } | null>(null);
+const folderError = ref<string | null>(null);
+const folderBusy = ref(false);
 const toast = ref<string | null>(null);
 const displayName = ref(props.displayName ?? "");
 const photo = ref<string | null>(props.photo ?? null);
@@ -375,9 +475,31 @@ const view = ref<"over" | "full" | "floating">("over");
 const navOpen = ref<"open" | "icons">("open");
 const navCollapsed = computed(() => navOpen.value === "icons");
 const navWidth = ref(256);
+const isMobile = ref(false);
+
+onMounted(() => {
+  const mq = window.matchMedia("(max-width: 639px)");
+  const sync = () => {
+    isMobile.value = mq.matches;
+    if (mq.matches) navOpen.value = "icons";
+  };
+  sync();
+  mq.addEventListener("change", sync);
+  onUnmounted(() => mq.removeEventListener("change", sync));
+});
 const showFilters = ref(false);
 const filters = ref({ from: "", to: "", subject: "", text: "", flagged: false });
 const moveOpen = ref(false);
+const dragUids = ref<number[]>([]);
+const dropTarget = ref<string | null>(null);
+
+async function dropOn(path: string) {
+  dropTarget.value = null;
+  const uids = [...dragUids.value];
+  dragUids.value = [];
+  if (!uids.length || path === selected.value) return;
+  await act("move", path, uids);
+}
 void searching.value;
 
 onMounted(async () => {
@@ -468,7 +590,145 @@ watch([selected, page, compose], () => {
 onMounted(startPoll);
 onUnmounted(stopPoll);
 
+function isDraftBox(mb: Mailbox): boolean {
+  if ((mb.specialUse ?? "").toLowerCase().includes("draft")) return true;
+  return (mb.path ?? "").split(".").pop()?.toLowerCase() === "drafts";
+}
+
+function badgeCount(mb: Mailbox): number {
+  return isDraftBox(mb) ? mb.total : mb.unseen;
+}
+
+const isTrash = computed(() => {
+  const mb = mailboxes.value.find((m) => m.path === selected.value);
+  const path = mb?.path ?? selected.value ?? "";
+  return mb?.specialUse === "\\Trash" || path.split(".").pop()?.toLowerCase() === "trash";
+});
+
+function addrStr(list: Array<{ name?: string; address: string }>): string {
+  return list.map((a) => (a.name && a.name !== a.address ? `${a.name} <${a.address}>` : a.address)).join(", ");
+}
+
+const SYSTEM_LEAVES = ["inbox", "sent", "drafts", "trash", "junk", "spam", "archive"];
+
+function isCustomBox(mb: Mailbox): boolean {
+  if (mb.specialUse) return false;
+  const leaf = (mb.path ?? "").split(".").pop()?.toLowerCase() ?? "";
+  return !SYSTEM_LEAVES.includes(leaf);
+}
+
+function folderErr(e: unknown): string {
+  const d = (e as { data?: { message?: string }; statusCode?: number })?.data;
+  const code = (e as { statusCode?: number })?.statusCode;
+  if (code === 409 || d?.message === "Folder not empty") return t("folderNotEmpty");
+  return (typeof d?.message === "string" ? d.message : null) ?? t("genericError");
+}
+
+async function submitFolder() {
+  const d = folderDialog.value;
+  if (!d || folderBusy.value) return;
+  folderBusy.value = true;
+  folderError.value = null;
+  try {
+    if (d.mode === "create") {
+      const r = await $fetch<{ path?: string }>("/api/mailbox", {
+        method: "POST",
+        body: { op: "create", name: d.name },
+      });
+      await refreshMailboxes();
+      if (r.path) selectMailbox(r.path);
+    } else if (d.mode === "rename" && d.path) {
+      const r = await $fetch<{ path?: string }>("/api/mailbox", {
+        method: "POST",
+        body: { op: "rename", path: d.path, newName: d.name },
+      });
+      await refreshMailboxes();
+      if (r.path) selectMailbox(r.path);
+    } else if (d.mode === "delete" && d.path) {
+      const gone = d.path;
+      await $fetch("/api/mailbox", { method: "POST", body: { op: "delete", path: gone } });
+      await refreshMailboxes();
+      if (selected.value === gone) {
+        const fallback = mailboxes.value.find((m) => !isCustomBox(m));
+        selectMailbox(fallback?.path ?? "INBOX");
+      }
+    }
+    folderDialog.value = null;
+  } catch (e) {
+    folderError.value = folderErr(e);
+  } finally {
+    folderBusy.value = false;
+  }
+}
+
+async function openDraft(m: MailSummary) {
+  try {
+    const box = encodeURIComponent(selected.value ?? "INBOX");
+    const data = await $fetch<{ mail: MailDetail }>(`/api/mail?mailbox=${box}&uid=${m.uid}`);
+    const d = data.mail;
+    if (!d) return;
+    const extra = d as MailDetail & { messageId?: string; references?: string };
+    const refs = (extra.references ?? "").split(/\s+/).filter(Boolean);
+    const last = refs[refs.length - 1];
+    if (extra.messageId && last === extra.messageId) refs.pop();
+    const inReplyTo = refs.length ? (refs[refs.length - 1] ?? undefined) : undefined;
+    const files = await Promise.all(
+      (d.files ?? []).map(async (f) => {
+        if (f.size > 20 * 1024 * 1024) return null;
+        try {
+          const buf = await $fetch<ArrayBuffer>(
+            `/api/attachment?mailbox=${box}&uid=${m.uid}&part=${encodeURIComponent(f.partId)}`,
+            { responseType: "arrayBuffer" },
+          );
+          const bytes = new Uint8Array(buf);
+          let bin = "";
+          for (let i = 0; i < bytes.length; i += 8192) {
+            bin += String.fromCharCode(...bytes.subarray(i, i + 8192));
+          }
+          return { name: f.filename, type: f.contentType, size: f.size, content: btoa(bin), cid: f.contentId, inline: f.inline };
+        } catch {
+          return null;
+        }
+      }),
+    );
+    compose.value = {
+      key: `draft-${m.uid}`,
+      to: addrStr(d.to ?? []),
+      cc: addrStr(d.cc ?? []),
+      bcc: addrStr(d.bcc ?? []),
+      subject: d.subject === "(no subject)" ? "" : d.subject,
+      body: d.html ?? (d.text ? plainToHtml(d.text) : undefined),
+      inReplyTo,
+      references: refs.length > 1 ? refs.slice(0, -1).join(" ") : undefined,
+      draftUid: m.uid,
+      draftMailbox: selected.value ?? "INBOX",
+      attachments: files.flatMap((f) => (f ? [f] : [])),
+    };
+  } catch (e) {
+    error.value = e instanceof Error ? e.message : t("genericError");
+  }
+}
+
+async function onSent() {
+  toast.value = t("sentToast");
+  await refreshMailboxes();
+  const box = mailboxes.value.find((b) => b.path === selected.value);
+  if (box && isDraftBox(box) && selected.value) await loadList(selected.value, page.value);
+}
+
+async function onDrafted() {
+  toast.value = t("draftSaved");
+  await refreshMailboxes();
+  const box = mailboxes.value.find((b) => b.path === selected.value);
+  if (box && isDraftBox(box) && selected.value) await loadList(selected.value, page.value);
+}
+
 async function open(m: MailSummary) {
+  const box = mailboxes.value.find((b) => b.path === selected.value);
+  if (box && isDraftBox(box)) {
+    await openDraft(m);
+    return;
+  }
   openUid.value = m.uid;
   const peers = messages.value
     .filter((x) => x.threadId === m.threadId)
@@ -493,19 +753,34 @@ async function open(m: MailSummary) {
 
 async function act(action: string, target?: string, uids?: number[]) {
   if (!selected.value) return;
+  const box = selected.value;
   const list = uids?.length ? uids : [...checked.value];
   if (!list.length) return;
   try {
     await $fetch("/api/mail/action", {
       method: "POST",
-      body: { action, mailbox: selected.value, uids: list, target },
+      body: { action, mailbox: box, uids: list, target },
     });
   } catch (e: unknown) {
     const d = (e as { data?: { error?: unknown; message?: string } })?.data;
     error.value = (typeof d?.error === "string" ? d.error : d?.message) ?? t("genericError");
+    await loadList(box, page.value);
+    return;
   }
-  await loadList(selected.value, page.value);
+  const gone = new Set(list);
+  messages.value = messages.value.filter((m) => !gone.has(m.uid));
+  if (results.value) results.value = results.value.filter((m) => !gone.has(m.uid));
+  total.value = Math.max(0, total.value - list.length);
+  const next = new Set(checked.value);
+  list.forEach((u) => next.delete(u));
+  checked.value = next;
+  if (openMail.value && gone.has(openMail.value.uid)) closeMail();
+  else {
+    if (openUid.value !== null && gone.has(openUid.value)) openUid.value = null;
+    if (openThread.value.length) openThread.value = openThread.value.filter((d) => !gone.has(d.uid));
+  }
   await refreshMailboxes();
+  if (messages.value.length === 0 && total.value > 0 && !results.value) await loadList(box, page.value);
 }
 
 function makeReply(m: MailSummary) {
@@ -517,21 +792,22 @@ function makeReply(m: MailSummary) {
   const refs = (detail as { references?: string } | null)?.references ?? null;
   const html = (detail?.html ?? "").trim();
   const plain = (detail?.text ?? "").trim() || stripHtml(html);
-  const who = m.from?.name || m.from?.address || "";
+  const addr = m.from?.address ?? "";
+  const name = m.from?.name ?? "";
+  const who = name && addr && name !== addr ? `${name} <${addr}>` : name || addr;
   const when = m.date ? new Date(m.date).toLocaleString(dateLocale.value) : "";
   const head = who || when ? `${t("replyOn")} ${when}${who ? `, ${who}` : ""} ${t("replyWrote")} :` : "";
 
-  const quotedHtml = html
-    ? `${head ? `<p>${escapeHtml(head)}</p>` : ""}<blockquote>${html}</blockquote>`
-    : "";
-  const quotedText = plain
-    ? `${head ? `\n\n${head}\n` : "\n\n"}${plain.split("\n").map((l) => "> " + l).join("\n")}`
-    : "";
+  const original = nestQuotes(html || (plain ? plainToHtml(plain) : ""));
+  const quote =
+    `<p><br></p>` +
+    `${head ? `<div>${escapeHtml(head)}<br></div>` : ""}` +
+    `${original ? `<blockquote>${original}</blockquote>` : ""}`;
   compose.value = {
     key: "reply-" + m.uid,
     to: m.from?.address ?? "",
     subject: /^re\s*:/i.test(m.subject) ? m.subject : `Re: ${m.subject}`,
-    body: quotedHtml || quotedText || undefined,
+    body: original ? quote : undefined,
     inReplyTo: msgId ?? undefined,
     references: refs ?? undefined,
   };
@@ -642,6 +918,7 @@ function selectMailbox(path: string) {
   page.value = 0;
   results.value = null;
   query.value = "";
+  if (isMobile.value) navOpen.value = "icons";
 }
 
 function closeMail() {

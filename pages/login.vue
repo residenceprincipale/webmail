@@ -1,6 +1,6 @@
 <template>
   <div class="flex min-h-screen items-center justify-center bg-white px-4">
-    <div class="w-full max-w-[450px] rounded-2xl border border-neutral-300 bg-white px-10 py-12 text-black">
+    <div class="w-full max-w-[450px] rounded-2xl border border-neutral-300 bg-white px-5 py-8 text-black sm:px-10 sm:py-12">
       <div class="mb-2 flex items-center justify-end gap-1 text-xs font-medium text-neutral-700">
         <button type="button" :aria-pressed="locale === 'fr'" title="Français" :class="localeBtn('fr')" @click="locale = 'fr'">FR</button>
         <button type="button" :aria-pressed="locale === 'en'" title="English" :class="localeBtn('en')" @click="locale = 'en'">EN</button>
@@ -71,6 +71,14 @@
           </button>
         </div>
       </form>
+      <p class="mt-6 text-center text-xs text-neutral-700">
+        <a
+          href="https://github.com/residenceprincipale/webmail/issues"
+          target="_blank"
+          rel="noopener"
+          class="hover:underline"
+        >{{ t("needHelp") }}</a>
+      </p>
     </div>
   </div>
 </template>

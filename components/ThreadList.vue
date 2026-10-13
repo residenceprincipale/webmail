@@ -5,7 +5,7 @@
     </p>
     <article v-for="m in ordered" :key="m.uid" class="border-b border-neutral-300">
       <button
-        class="flex w-full cursor-pointer items-center gap-3 px-6 py-3 text-left hover:bg-neutral-100"
+        class="flex w-full cursor-pointer items-center gap-3 px-4 py-3 text-left hover:bg-neutral-100 sm:px-6"
         :aria-expanded="open.includes(m.uid)"
         @click="toggle(m.uid)"
       >
@@ -22,7 +22,7 @@
         <PaperclipIcon v-if="m.attachments > 0" />
         <span class="text-xs text-neutral-700">{{ open.includes(m.uid) ? "▲" : "▼" }}</span>
       </button>
-      <div v-if="open.includes(m.uid)" class="px-6 pb-5">
+      <div v-if="open.includes(m.uid)" class="px-4 pb-5 sm:px-6">
         <ThreadBody :mail="m" />
         <AttachmentPreview
           v-if="m.files?.length > 0"

@@ -97,7 +97,7 @@ async function sendOne(msg: ScheduledMessage, auth: MailSession): Promise<void> 
   if (msg.receipt) headers["Disposition-Notification-To"] = auth.login;
   if (msg.replyTo) headers["Reply-To"] = msg.replyTo;
   await transport.sendMail({
-    from: { name: msg.fromName || "Webmail", address: auth.login },
+    from: msg.fromName ? { name: msg.fromName, address: auth.login } : auth.login,
     to: msg.to,
     cc: msg.cc || undefined,
     bcc: msg.bcc || undefined,

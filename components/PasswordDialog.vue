@@ -1,6 +1,6 @@
 <template>
   <div class="fixed inset-0 z-40 flex items-center justify-center bg-black/40 px-4">
-    <div class="w-full max-w-[440px] rounded-2xl bg-white p-6">
+    <div class="max-h-[85dvh] w-full max-w-[440px] overflow-y-auto rounded-2xl bg-white p-5 sm:p-6">
       <h2 class="mb-1 text-lg font-medium">{{ t("changePassword") }}</h2>
       <p class="mb-4 text-xs text-neutral-700">
         {{ t("pwdBlurb") }}

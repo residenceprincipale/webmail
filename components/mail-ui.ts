@@ -28,6 +28,7 @@ export const MenuIcon = svg(["M3 6h18M3 12h18M3 18h18"]);
 export const SearchIcon = svg(["<circle cx=\"11\" cy=\"11\" r=\"7\" /><path d=\"m20 20-3.5-3.5\" />"]);
 export const FilterIcon = svg(["M3 5h18M6 12h12M10 19h4"]);
 export const PencilIcon = svg(["M12 20h9", "M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"]);
+export const PlusIcon = svg(["M12 5v14M5 12h14"]);
 export const StarIcon = svg(["m12 3 2.9 5.9 6.5.9-4.7 4.6 1.1 6.5-5.8-3-5.8 3 1.1-6.5L2.6 9.8l6.5-.9z"]);
 export const StarFilledIcon = svg(["m12 3 2.9 5.9 6.5.9-4.7 4.6 1.1 6.5-5.8-3-5.8 3 1.1-6.5L2.6 9.8l6.5-.9z"], {
   fill: "#000000",
@@ -35,7 +36,6 @@ export const StarFilledIcon = svg(["m12 3 2.9 5.9 6.5.9-4.7 4.6 1.1 6.5-5.8-3-5.
   "stroke-width": 1,
   class: "star-filled",
 });
-export const ArchiveIcon = svg(["M5 8v11a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V8M10 12h4", "<rect x=\"3\" y=\"4\" width=\"18\" height=\"4\" />"]);
 export const TrashIcon = svg(["M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14"]);
 export const SpamIcon = svg(["M12 2 2 20h20z", "M12 9v5M12 17h.01"]);
 export const FolderIcon = svg(["M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"]);
@@ -49,8 +49,11 @@ export const PaperclipIcon = svg(["M21 11.5 12.5 20a5 5 0 0 1-7-7l8-8a3.5 3.5 0 
 });
 export const ReplyIcon = svg(["M9 10 4 15l5 5", "M4 15h9a7 7 0 0 0 7-7V6"]);
 export const CloseIcon = svg(["M6 6l12 12M18 6 6 18"]);
+export const ExpandIcon = svg(["M9 4H4v5M15 4h5v5M9 20H4v-5M15 20h5v-5"]);
+export const ShrinkIcon = svg(["M4 9h5V4M20 9h-5V4M4 15h5v5M20 15h-5v5"]);
 export const ClockIcon = svg(["<circle cx=\"12\" cy=\"12\" r=\"9\" /><path d=\"M12 7v5l3.5 2\" />"]);
 export const ReloadIcon = svg(["M21 4v6h-6", "M3 20v-6h6", "M20.5 10a8.5 8.5 0 0 0-14.8-3.4L3 9", "M3.5 14a8.5 8.5 0 0 0 14.8 3.4L21 15"]);
+export const RestoreIcon = svg(["M9 14 4 9l5-5", "M4 9h10a6 6 0 0 1 0 12h-3"]);
 
 export const BoxIcon = defineComponent({
   name: "BoxIcon",

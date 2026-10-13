@@ -1,9 +1,9 @@
 <template>
   <div class="flex h-full flex-col">
-    <div class="flex h-14 shrink-0 items-center gap-1 border-b border-neutral-300 px-4">
+    <div class="flex h-14 shrink-0 items-center gap-0 overflow-x-auto border-b border-neutral-300 px-2 sm:gap-1 sm:px-4">
       <IconBtn :label="t('close')" :on-click="() => $emit('close')"><CloseIcon /></IconBtn>
-      <IconBtn :label="t('archive')" :on-click="() => $emit('archive')"><ArchiveIcon /></IconBtn>
       <IconBtn :label="t('spam')" :on-click="() => $emit('spam')"><SpamIcon /></IconBtn>
+      <IconBtn v-if="inTrash" :label="t('restore')" :on-click="() => $emit('restore')"><RestoreIcon /></IconBtn>
       <IconBtn :label="t('delete')" :on-click="() => $emit('delete')"><TrashIcon /></IconBtn>
       <div v-if="mailboxes" class="relative">
         <IconBtn :label="t('moveTo')" :on-click="() => (moveOpen = !moveOpen)"><FolderIcon /></IconBtn>
@@ -48,7 +48,7 @@
 <script setup lang="ts">
 import type { Mailbox, MailDetail } from "~/lib/types";
 import {
-  IconBtn, CloseIcon, ArchiveIcon, SpamIcon, TrashIcon, FolderIcon,
+  IconBtn, CloseIcon, SpamIcon, TrashIcon, FolderIcon, RestoreIcon,
   MailOpenIcon, StarIcon, StarFilledIcon, ReplyIcon,
 } from "./mail-ui";
 
@@ -59,15 +59,16 @@ const props = defineProps<{
   currentMailbox?: string | null;
   mailboxPath?: string | null;
   thread?: MailDetail[];
+  inTrash?: boolean;
 }>();
 
 defineEmits<{
   (e: "reply"): void;
   (e: "close"): void;
   (e: "star"): void;
-  (e: "archive"): void;
   (e: "spam"): void;
   (e: "delete"): void;
+  (e: "restore"): void;
   (e: "seen"): void;
   (e: "move", target: string): void;
   (e: "view", v: "over" | "full" | "floating"): void;
